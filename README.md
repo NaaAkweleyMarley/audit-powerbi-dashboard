@@ -187,5 +187,5 @@ audit-powerbi-dashboard/
 ```
 
 #### Author:
-*** Naa Akweley Marley ***
+#### Naa Akweley Marley 
 Linkedin: [Naa Akweley Marley](https://www.linkedin.com/in/naa-akweley-marley) 
