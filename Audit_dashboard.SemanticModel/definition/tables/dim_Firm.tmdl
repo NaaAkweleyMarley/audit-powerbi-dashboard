@@ -1,0 +1,97 @@
+table dim_Firm
+	lineageTag: 0e557f4f-0b6b-4225-bb41-305ffd2a9d92
+
+	column Index
+		dataType: string
+		lineageTag: 8e22ab80-9142-4f21-ba81-db630fd91198
+		summarizeBy: none
+		sourceColumn: Index
+
+		annotation SummarizationSetBy = Automatic
+
+	column Firm_ID
+		dataType: string
+		lineageTag: 225b01c7-ccc8-4bd1-95f5-7deb18ab1148
+		summarizeBy: none
+		sourceColumn: Firm_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Firm_Name
+		dataType: string
+		lineageTag: be481480-b670-478d-8bcb-861b8a5cb460
+		summarizeBy: none
+		sourceColumn: Firm_Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Headquarters
+		dataType: string
+		lineageTag: 31c9aa8a-426c-4dfa-8620-e0fe53aaeb88
+		summarizeBy: none
+		sourceColumn: Headquarters
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year_Founded
+		dataType: string
+		lineageTag: 5553e064-a0dc-4ab7-b33a-e49edd8cf979
+		summarizeBy: none
+		sourceColumn: Year_Founded
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region_Presence
+		dataType: string
+		lineageTag: 400c2aed-2f1a-44ce-b4ba-3456d1c34fb4
+		summarizeBy: none
+		sourceColumn: Region_Presence
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_Firm = m
+		mode: import
+		source = ```
+				let
+				    Source = fact_raw,
+				    #"Renamed Columns" = Table.RenameColumns(Source,{{"Firm_Name", "Company_Name"}}),
+				    #"Removed Other Columns" = Table.SelectColumns(#"Renamed Columns",{"Company_Name"}),
+				    #"Added Index" = Table.AddIndexColumn(#"Removed Other Columns", "Index", 1, 1, Int64.Type),
+				    #"Reordered Columns" = Table.ReorderColumns(#"Added Index",{"Index", "Company_Name"}),
+				    #"Renamed Columns1" = Table.RenameColumns(#"Reordered Columns",{{"Index", "Company_ID"}}),
+				    #"Added Custom" = Table.AddColumn(#"Renamed Columns1", "Custom", each if [Company_Name] = "Deloitte" then "New York, USA" 
+				else if [Company_Name] = "PwC" then "London, UK" else if [Company_Name] = "Ernst & Young" then "London, UK" 
+				else if [Company_Name] = "EY" then "London, UK" 
+				else if [Company_Name] = "KPMG" then "Amstelveen, Netherlands" 
+				else null),
+				    #"Renamed Columns2" = Table.RenameColumns(#"Added Custom",{{"Custom", "Headquarters"}}),
+				    #"Added Custom1" = Table.AddColumn(#"Renamed Columns2", "Custom", each if [Company_Name] = "Deloitte" then 1845 
+				else if [Company_Name] = "PwC" then 1998 
+				else if [Company_Name] = "EY" then 1989 
+				else if [Company_Name] = "KPMG" then 1987 
+				else if [Company_Name] = "Ernst & Young" then 1989
+				else null),
+				    #"Renamed Columns3" = Table.RenameColumns(#"Added Custom1",{{"Custom", "Year_Founded"}}),
+				    #"Added Custom2" = Table.AddColumn(#"Renamed Columns3", "Custom", each if [Company_Name] = "Deloitte" then "Global" 
+				else if [Company_Name] = "PwC" then "Global" 
+				else if [Company_Name] = "Ernst & Young" then "Global" 
+				else if [Company_Name] = "KPMG" then "Global" 
+				else null),
+				    #"Renamed Columns4" = Table.RenameColumns(#"Added Custom2",{{"Custom", "Region_Presence"}}),
+				    #"Added Custom3" = Table.AddColumn(#"Renamed Columns4", "Custom", each if [Company_Name] = "Deloitte" then "001" 
+				else if [Company_Name] = "PwC" then "002" 
+				else if [Company_Name] = "Ernst & Young" then "003" 
+				else if [Company_Name] = "KPMG" then "004" 
+				else null),
+				    #"Reordered Columns1" = Table.ReorderColumns(#"Added Custom3",{"Company_ID", "Custom", "Company_Name", "Headquarters", "Year_Founded", "Region_Presence"}),
+				    #"Renamed Columns5" = Table.RenameColumns(#"Reordered Columns1",{{"Company_ID", "Index"}, {"Custom", "Company_ID"}}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Renamed Columns5",{{"Company_ID", type text}, {"Index", type text}, {"Company_Name", type text}}),
+				    #"Renamed Columns6" = Table.RenameColumns(#"Changed Type",{{"Company_Name", "Firm_Name"}, {"Company_ID", "Firm_ID"}})
+				in
+				    #"Renamed Columns6"
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

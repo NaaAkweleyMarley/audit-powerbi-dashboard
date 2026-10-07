@@ -1,0 +1,22 @@
+relationship AutoDetected_2d0a43a6-b134-41ca-a5d2-be384ca77cf5
+	fromColumn: fact_Risks.Total_Audit_Engagements
+	toColumn: fact_raw.Total_Audit_Engagements
+
+relationship AutoDetected_5a849fb5-0d4f-440e-9d57-5781659276cf
+	fromColumn: fact_Risks.'dim_Industry.Industry_ID'
+	toColumn: dim_Industry.Industry_ID
+
+relationship AutoDetected_c1933885-5f52-406a-8bff-fa79dd21a793
+	fromColumn: fact_Risks.'dim_AIUsage.AIUsage_ID'
+	toColumn: dim_AIUsage.AIUsage_ID
+
+relationship 6a57d53b-64b8-1e23-2971-e0418bf1551e
+	fromColumn: fact_Risks.'dim_Date.Year_ID'
+	toColumn: dim_Date.Year_ID
+
+relationship f7370f8f-ccce-8603-4d3b-1914edc59062
+	crossFilteringBehavior: bothDirections
+	toCardinality: many
+	fromColumn: dim_Firm.Firm_ID
+	toColumn: fact_Risks.'dim_Firm.Firm_ID'
+

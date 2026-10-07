@@ -1,0 +1,460 @@
+table fact_Risks
+	lineageTag: f539ffd0-8bcb-49eb-bff5-21f2c6e781bb
+
+	measure TotalAuditEngagements = SUM('fact_Risks'[Total_Audit_Engagements])
+		formatString: 0
+		lineageTag: b700a261-76c5-48b9-83fc-322d659fa0e4
+
+	measure 'Total Fraud Cases' = SUM('fact_Risks'[Fraud_Cases_Detected])
+		formatString: 0
+		lineageTag: 4bcdcf66-c257-424e-a93e-67b13d4cbd25
+
+	measure 'Avg Audit Effectiveness' = AVERAGE('fact_Risks'[Audit_Effectiveness_Score])
+		lineageTag: 86359550-74d0-4c9e-9e8a-5faf7c350c46
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Fraud Cases' = SUM(fact_Risks[Fraud_Cases_Detected])
+		formatString: 0
+		lineageTag: acf32f44-be7a-4a4d-8deb-c51ea2124696
+
+	measure 'Compliance Violations' = SUM(fact_Risks[Compliance_Violations])
+		formatString: 0
+		lineageTag: 75731b67-3a48-48fa-9511-7c30afe78bd3
+
+	measure 'Avg Client Satisfaction' = AVERAGE(fact_Risks[Client_Satisfaction_Score])
+		lineageTag: 4f32b254-b5cd-49c6-94cb-2bb400f02033
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Revenue Impact' = SUM(fact_Risks[Total_Revenue_Impact])
+		lineageTag: 32b627ad-2d67-4e06-bd4f-b49bd830960b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Engagements' = SUM(fact_Risks[Total_Audit_Engagements])
+		formatString: 0
+		lineageTag: 33282130-d686-4498-8c60-fefb96bb01d5
+
+	measure 'High Risk %' = DIVIDE(SUM(fact_Risks[High_Risk_Cases]), SUM(fact_Risks[Total_Audit_Engagements]))
+		lineageTag: f6c9fc9c-0266-47ca-aae3-1769e456432b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Fraud Rate' =
+			
+			DIVIDE(
+			    SUM('fact_Risks'[Fraud_Cases_Detected]),
+			    SUM('fact_Risks'[Total_Audit_Engagements]),
+			    0
+			)
+		lineageTag: 66d5f7e4-3916-4d4a-a052-2004b70845e5
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Compliance Rate' =
+			
+			DIVIDE(
+			    SUM('fact_Risks'[Compliance_Violations]),
+			    SUM('fact_Risks'[Total_Audit_Engagements]),
+			    0
+			)
+		lineageTag: fc487936-343c-44e5-8f02-ddafaffa91e5
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Revenue Impact per Engagement' =
+			
+			DIVIDE([Revenue Impact], [Total Engagements], 0)
+		lineageTag: 81537fee-847d-4048-89d5-f5effb2b1d2d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Engagements per Employee' =
+			
+			DIVIDE(
+			    SUM('fact_Risks'[Total_Audit_Engagements]),
+			    SUM('fact_Risks'[Employee_Workload]),
+			    0
+			)
+		lineageTag: 8da71d23-e83a-4e53-b06d-40ff49978a3e
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure FirmRiskRank =
+			
+			RANKX(ALL(dim_Firm[Firm_Name]), [High Risk %], , DESC, DENSE)
+		formatString: 0
+		lineageTag: da48ea71-4e30-4c79-8c54-c3186917fbce
+
+	measure 'Top Firm By Audit Effectiveness' =
+			
+			VAR TopTable =
+			    TOPN(
+			        1,
+			        ADDCOLUMNS(
+			            VALUES(dim_Firm[Firm_Name]),
+			            "AvgEff", [Avg Audit Effectiveness]
+			        ),
+			        [AvgEff],
+			        DESC
+			    )
+			RETURN
+			    CONCATENATEX(TopTable, dim_Firm[Firm_Name], ", ")
+		lineageTag: f34deb2b-f44e-4ede-9358-d0bf0b5cbaec
+
+	measure 'Top Firm By Client Satisfaction' =
+			
+			VAR TopTable =
+			    TOPN(
+			        1,
+			        ADDCOLUMNS(
+			            VALUES(dim_Firm[Firm_Name]),
+			            "AvgCS", [Avg Client Satisfaction]
+			        ),
+			        [AvgCS],
+			        DESC
+			    )
+			RETURN
+			    CONCATENATEX(TopTable, dim_Firm[Firm_Name], ", ")
+		lineageTag: 29d51c0e-fe03-4857-a87e-7caf9a2fdc52
+
+	measure 'Avg Audit Effectiveness YoY' =
+			
+			VAR CurrYear = MAX(dim_Date[Year])
+			VAR PrevYear = CurrYear - 1
+			VAR CurrVal = CALCULATE([Avg Audit Effectiveness], FILTER(ALL(dim_Date), dim_Date[Year] = CurrYear))
+			VAR PrevVal = CALCULATE([Avg Audit Effectiveness], FILTER(ALL(dim_Date), dim_Date[Year] = PrevYear))
+			RETURN
+			IF(PrevVal = 0, BLANK(), (CurrVal - PrevVal) / PrevVal)
+		lineageTag: 729bc73a-950d-4d61-82c7-78a6d750a49c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure IndustryRevenueImpact = SUM('fact_Risks'[Total_Revenue_Impact])
+		lineageTag: 45db0b62-a928-42c0-a9b0-e44dbe7c5563
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure RevenueImpactPerEngagement =
+			
+			DIVIDE(
+			    SUM('fact_Risks'[Total_Revenue_Impact]),
+			    SUM('fact_Risks'[Total_Audit_Engagements]),
+			    0
+			)
+		lineageTag: a6e2c07e-161f-463f-8466-577abe71946d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure IndustryRevenueShare =
+			
+			DIVIDE(
+			    SUM('fact_Risks'[Total_Revenue_Impact]),
+			    CALCULATE(SUM('fact_Risks'[Total_Revenue_Impact]), ALL(dim_Industry[Industry_Affected])),
+			    0
+			)
+		lineageTag: 772a4a51-e58b-4e29-a7c5-5bda1cdb6e1a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Industry High Risk Pct' =
+			
+			DIVIDE(
+			    SUM('fact_Risks'[High_Risk_Cases]),
+			    SUM('fact_Risks'[Total_Audit_Engagements]),
+			    0
+			)
+		lineageTag: 01edf16e-af7e-48d7-9d06-8c507cdb15ab
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Industry Fraud Rate' = ```
+			
+			DIVIDE(
+			    SUM('fact_Risks'[Fraud_Cases_Detected]),
+			    SUM('fact_Risks'[Total_Audit_Engagements]),
+			    0
+			)
+			
+			```
+		lineageTag: 7a80e827-9b4a-462b-a91b-afc077e718fa
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure IndustryAvgAuditEffectiveness = AVERAGE('fact_Risks'[Audit_Effectiveness_Score])
+		lineageTag: bb4ba714-268f-4f2c-b088-ccca8be2f87e
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure IndustryAvgClientSatisfaction = AVERAGE('fact_Risks'[Client_Satisfaction_Score])
+		lineageTag: 605cef7b-ebde-4ccf-a2bf-9e606948b722
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure Engagements_AI_Yes =
+			
+			CALCULATE(
+			    SUM('fact_Risks'[Total_Audit_Engagements]),
+			    'fact_Risks'[AI_Used_for_Auditing] = "Yes"
+			)
+		formatString: 0
+		lineageTag: 7cece6c1-0d20-41e0-86e6-612b42faf4f0
+
+	measure Engagements_AI_No =
+			
+			CALCULATE(
+			    SUM('fact_Risks'[Total_Audit_Engagements]),
+			    'fact_Risks'[AI_Used_for_Auditing] = "No"
+			)
+		formatString: 0
+		lineageTag: 8ccf7598-4a4a-4a93-a02c-498200e85778
+
+	measure 'AI Adoption Rate' =
+			
+			DIVIDE( [Engagements_AI_Yes], [Total Engagements], 0 )
+		lineageTag: be069f4d-cef8-4def-8741-6ec86ab8656c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Avg Effectiveness of AI Use' = ```
+			CALCULATE( [Avg Audit Effectiveness], 'fact_Risks'[AI_Used_for_Auditing] = "Yes" ) 
+			```
+		lineageTag: e5603d2d-38d9-4fcd-9459-f0bf7ef04975
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure AvgEffectiveness_AI_No = ```
+			
+			CALCULATE( [Avg Audit Effectiveness], 'fact_Risks'[AI_Used_for_Auditing] = "No" )
+			
+			```
+		lineageTag: 4e33c53f-699a-49e7-adfd-70782837792b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Delta Effectiveness AI' =
+			
+			[Avg Effectiveness of AI Use] - [AvgEffectiveness_AI_No]
+		lineageTag: 16abacaf-716a-4a57-9111-d976f8fd8acc
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Avg Satisfaction of AI Use' =
+			
+			CALCULATE( [Avg Client Satisfaction], 'fact_Risks'[AI_Used_for_Auditing] = "Yes" )
+		lineageTag: 718b656f-7e50-426f-ac2c-b6019ad14945
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure AvgSatisfaction_AI_No =
+			
+			CALCULATE( [Avg Client Satisfaction], 'fact_Risks'[AI_Used_for_Auditing] = "No" )
+		lineageTag: c4d5f136-efc5-412d-821a-75730d8db868
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure FraudRate_AI_Yes =
+			
+			CALCULATE(DIVIDE(SUM('fact_Risks'[Fraud_Cases_Detected]), SUM('fact_Risks'[Total_Audit_Engagements]),0), 'fact_Risks'[AI_Used_for_Auditing] = "Yes")
+		lineageTag: 78ce1c53-22e8-4d77-a87f-fddf26e5c9be
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure FraudRate_AI_No =
+			
+			CALCULATE(DIVIDE(SUM('fact_Risks'[Fraud_Cases_Detected]), SUM('fact_Risks'[Total_Audit_Engagements]),0), 'fact_Risks'[AI_Used_for_Auditing] = "No")
+		lineageTag: a99ed120-2b61-409f-a563-d1867a6c5261
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure ComplianceRate_AI_Yes =
+			
+			CALCULATE(DIVIDE(SUM('fact_Risks'[Compliance_Violations]), SUM('fact_Risks'[Total_Audit_Engagements]),0), 'fact_Risks'[AI_Used_for_Auditing] = "Yes")
+		lineageTag: fbe16ca1-7ec4-4007-b778-7b706683e8f6
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure ComplianceRate_AI_No =
+			
+			CALCULATE(DIVIDE(SUM('fact_Risks'[Compliance_Violations]), SUM('fact_Risks'[Total_Audit_Engagements]),0), 'fact_Risks'[AI_Used_for_Auditing] = "No")
+		lineageTag: cd1984ef-f79f-46f5-b780-beee576f513f
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: f92215dc-8230-4c85-9a86-df8f203b7975
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column Firm_Name
+		dataType: string
+		lineageTag: 167fb15d-4923-482e-a7aa-6b4a821eacc1
+		summarizeBy: none
+		sourceColumn: Firm_Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Industry_Affected
+		dataType: string
+		lineageTag: d1dd1d61-f050-4a07-9f03-a064a00c62ad
+		summarizeBy: none
+		sourceColumn: Industry_Affected
+
+		annotation SummarizationSetBy = Automatic
+
+	column AI_Used_for_Auditing
+		dataType: string
+		lineageTag: 324d0665-6adc-495b-b386-4bbc1702406a
+		summarizeBy: none
+		sourceColumn: AI_Used_for_Auditing
+
+		annotation SummarizationSetBy = Automatic
+
+	column Total_Audit_Engagements
+		dataType: int64
+		formatString: 0
+		lineageTag: 9b777812-8d58-4e9d-8602-eab39f3d5fcd
+		summarizeBy: none
+		sourceColumn: Total_Audit_Engagements
+
+		annotation SummarizationSetBy = Automatic
+
+	column High_Risk_Cases
+		dataType: int64
+		formatString: 0
+		lineageTag: 79e8898e-3aea-4c44-90ba-f3b9e6b6677c
+		summarizeBy: sum
+		sourceColumn: High_Risk_Cases
+
+		annotation SummarizationSetBy = Automatic
+
+	column Compliance_Violations
+		dataType: int64
+		formatString: 0
+		lineageTag: 871e650f-e6c9-43d9-bb70-dc14fb30cbc0
+		summarizeBy: sum
+		sourceColumn: Compliance_Violations
+
+		annotation SummarizationSetBy = Automatic
+
+	column Fraud_Cases_Detected
+		dataType: int64
+		formatString: 0
+		lineageTag: 2658e151-b31c-4b7a-a289-dbc9b9029d89
+		summarizeBy: sum
+		sourceColumn: Fraud_Cases_Detected
+
+		annotation SummarizationSetBy = Automatic
+
+	column Total_Revenue_Impact
+		dataType: double
+		lineageTag: b6988ce3-4cd7-4848-9d28-c9670ef05ef4
+		summarizeBy: sum
+		sourceColumn: Total_Revenue_Impact
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Employee_Workload
+		dataType: int64
+		formatString: 0
+		lineageTag: 12bcb89b-b219-456c-b6b2-b59f3c41b13c
+		summarizeBy: sum
+		sourceColumn: Employee_Workload
+
+		annotation SummarizationSetBy = Automatic
+
+	column Audit_Effectiveness_Score
+		dataType: double
+		lineageTag: 5077370c-6254-4db9-b816-caab61fad1fd
+		summarizeBy: sum
+		sourceColumn: Audit_Effectiveness_Score
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Client_Satisfaction_Score
+		dataType: double
+		lineageTag: d22647b9-4681-428f-8e1a-64187cc17655
+		summarizeBy: sum
+		sourceColumn: Client_Satisfaction_Score
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Fact_ID
+		dataType: int64
+		formatString: 0
+		lineageTag: 1d65f9a7-b23a-4867-8185-11744608b2c1
+		summarizeBy: count
+		sourceColumn: Fact_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'dim_Firm.Firm_ID'
+		dataType: string
+		lineageTag: ef449b5f-d4bf-4fc4-9099-a230af72d257
+		summarizeBy: none
+		sourceColumn: dim_Firm.Firm_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'dim_Industry.Industry_ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 4705794d-532d-4f83-a973-abda8977016f
+		summarizeBy: none
+		sourceColumn: dim_Industry.Industry_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'dim_AIUsage.AIUsage_ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 72cd9cc3-65ca-4250-a47c-e4c305b84168
+		summarizeBy: none
+		sourceColumn: dim_AIUsage.AIUsage_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'dim_Date.Year_ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 298d9314-b34a-43bd-8755-dd84689132ca
+		summarizeBy: none
+		sourceColumn: dim_Date.Year_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_Risks = m
+		mode: import
+		source =
+				let
+				    Source = fact_raw,
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"Year", "Firm_Name", "Industry_Affected", "AI_Used_for_Auditing", "Total_Audit_Engagements", "High_Risk_Cases", "Compliance_Violations", "Fraud_Cases_Detected", "Total_Revenue_Impact", "Employee_Workload", "Audit_Effectiveness_Score", "Client_Satisfaction_Score"}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Removed Other Columns",{{"Year", Int64.Type}}),
+				    #"Added Index" = Table.AddIndexColumn(#"Changed Type", "Index", 1, 1, Int64.Type),
+				    #"Renamed Columns" = Table.RenameColumns(#"Added Index",{{"Index", "Fact_ID"}}),
+				    #"Merged Queries" = Table.NestedJoin(#"Renamed Columns", {"Firm_Name"}, dim_Firm, {"Firm_Name"}, "dim_Firm", JoinKind.LeftOuter),
+				    #"Expanded dim_Firm" = Table.ExpandTableColumn(#"Merged Queries", "dim_Firm", {"Firm_ID"}, {"dim_Firm.Firm_ID"}),
+				    #"Merged Queries1" = Table.NestedJoin(#"Expanded dim_Firm", {"Industry_Affected"}, dim_Industry, {"Industry_Affected"}, "dim_Industry", JoinKind.LeftOuter),
+				    #"Expanded dim_Industry" = Table.ExpandTableColumn(#"Merged Queries1", "dim_Industry", {"Industry_ID"}, {"dim_Industry.Industry_ID"}),
+				    #"Merged Queries2" = Table.NestedJoin(#"Expanded dim_Industry", {"AI_Used_for_Auditing"}, dim_AIUsage, {"AI_Used_for_Auditing"}, "dim_AIUsage", JoinKind.LeftOuter),
+				    #"Expanded dim_AIUsage" = Table.ExpandTableColumn(#"Merged Queries2", "dim_AIUsage", {"AIUsage_ID"}, {"dim_AIUsage.AIUsage_ID"}),
+				    #"Merged Queries3" = Table.NestedJoin(#"Expanded dim_AIUsage", {"Year"}, dim_Date, {"Year"}, "dim_Date", JoinKind.LeftOuter),
+				    #"Expanded dim_Date" = Table.ExpandTableColumn(#"Merged Queries3", "dim_Date", {"Year_ID"}, {"dim_Date.Year_ID"})
+				in
+				    #"Expanded dim_Date"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

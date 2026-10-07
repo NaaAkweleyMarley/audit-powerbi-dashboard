@@ -1,0 +1,42 @@
+table dim_AIUsage
+	lineageTag: 8b9bf6ef-ad45-4081-a8e7-9ac2d6700712
+
+	column AI_Used_for_Auditing
+		dataType: string
+		lineageTag: 3d14de72-a118-4834-9f0a-969cb67652df
+		summarizeBy: none
+		sourceColumn: AI_Used_for_Auditing
+
+		annotation SummarizationSetBy = Automatic
+
+	column AIUsage_ID
+		dataType: int64
+		formatString: 0
+		lineageTag: d33fc5c4-ee2d-43c9-bede-0da0c247165f
+		summarizeBy: none
+		sourceColumn: AIUsage_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'AI Usage Status' = IF(dim_AIUsage[AI_Used_for_Auditing]="Yes","AI Used","AI Not Used")
+		lineageTag: f23fa495-e626-4084-84b6-fde82fd28d6d
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_AIUsage = m
+		mode: import
+		source =
+				let
+				    Source = fact_raw,
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"AI_Used_for_Auditing"}),
+				    #"Added Index" = Table.AddIndexColumn(#"Removed Other Columns", "Index", 1, 1, Int64.Type),
+				    #"Renamed Columns" = Table.RenameColumns(#"Added Index",{{"Index", "AIUsage_ID"}}),
+				    #"Reordered Columns" = Table.ReorderColumns(#"Renamed Columns",{"AIUsage_ID", "AI_Used_for_Auditing"})
+				in
+				    #"Reordered Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

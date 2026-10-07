@@ -1,0 +1,121 @@
+table fact_raw
+	lineageTag: af898945-8e05-4e63-be92-58dc403bfa4b
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 060df4f4-0816-4cc4-9b91-d2dc35c5df3b
+		summarizeBy: none
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column Firm_Name
+		dataType: string
+		lineageTag: 9580a9c9-6489-49aa-ab57-d52d589a189b
+		summarizeBy: none
+		sourceColumn: Firm_Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Total_Audit_Engagements
+		dataType: int64
+		formatString: 0
+		lineageTag: 1aab9427-7101-4132-b386-7f09b3fa90a5
+		summarizeBy: none
+		sourceColumn: Total_Audit_Engagements
+
+		annotation SummarizationSetBy = Automatic
+
+	column High_Risk_Cases
+		dataType: int64
+		formatString: 0
+		lineageTag: a8276a44-2584-4101-8aa1-c244991b6f34
+		summarizeBy: none
+		sourceColumn: High_Risk_Cases
+
+		annotation SummarizationSetBy = Automatic
+
+	column Compliance_Violations
+		dataType: int64
+		formatString: 0
+		lineageTag: 9e9b98f0-add7-412f-8703-f56eeb3712a2
+		summarizeBy: none
+		sourceColumn: Compliance_Violations
+
+		annotation SummarizationSetBy = Automatic
+
+	column Fraud_Cases_Detected
+		dataType: int64
+		formatString: 0
+		lineageTag: eec87a17-d842-4e95-8ab9-4ebc3a803fb0
+		summarizeBy: none
+		sourceColumn: Fraud_Cases_Detected
+
+		annotation SummarizationSetBy = Automatic
+
+	column Industry_Affected
+		dataType: string
+		lineageTag: 751f98fb-219f-4e9c-96a1-671f7ec65d79
+		summarizeBy: none
+		sourceColumn: Industry_Affected
+
+		annotation SummarizationSetBy = Automatic
+
+	column Total_Revenue_Impact
+		dataType: double
+		formatString: 0.00
+		lineageTag: 9c9d245c-cc5c-4a09-9c58-6b2ca0eed986
+		summarizeBy: none
+		sourceColumn: Total_Revenue_Impact
+
+		annotation SummarizationSetBy = Automatic
+
+	column AI_Used_for_Auditing
+		dataType: string
+		lineageTag: 730e0904-d067-4302-a20d-91ecb1e7d9e8
+		summarizeBy: none
+		sourceColumn: AI_Used_for_Auditing
+
+		annotation SummarizationSetBy = Automatic
+
+	column Employee_Workload
+		dataType: int64
+		formatString: 0
+		lineageTag: 974e4c55-99fa-4c15-a5f7-77555671b8c1
+		summarizeBy: none
+		sourceColumn: Employee_Workload
+
+		annotation SummarizationSetBy = Automatic
+
+	column Audit_Effectiveness_Score
+		dataType: double
+		formatString: 0.00
+		lineageTag: 7c76a6ab-802b-47ca-8e75-128f611dfff0
+		summarizeBy: none
+		sourceColumn: Audit_Effectiveness_Score
+
+		annotation SummarizationSetBy = Automatic
+
+	column Client_Satisfaction_Score
+		dataType: double
+		formatString: 0.00
+		lineageTag: 5a5eb73d-8f64-4a76-9bc8-577f3e09a2e4
+		summarizeBy: none
+		sourceColumn: Client_Satisfaction_Score
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_raw = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("C:\Users\DELL\Desktop\kaggle business finance dataset.xlsx"), null, true),
+				    Sheet1_Sheet = Source{[Item="Sheet1",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(Sheet1_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"Year", Int64.Type}, {"Firm_Name", type text}, {"Total_Audit_Engagements", Int64.Type}, {"High_Risk_Cases", Int64.Type}, {"Compliance_Violations", Int64.Type}, {"Fraud_Cases_Detected", Int64.Type}, {"Industry_Affected", type text}, {"Total_Revenue_Impact", type number}, {"AI_Used_for_Auditing", type text}, {"Employee_Workload", Int64.Type}, {"Audit_Effectiveness_Score", type number}, {"Client_Satisfaction_Score", type number}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+

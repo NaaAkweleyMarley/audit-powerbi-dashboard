@@ -1,0 +1,23 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["fact_raw","dim_Firm","dim_Industry","dim_AIUsage","dim_Date","fact_Risks"]
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table fact_raw
+ref table dim_Firm
+ref table dim_Industry
+ref table dim_AIUsage
+ref table dim_Date
+ref table fact_Risks
+
+ref cultureInfo en-US
+
